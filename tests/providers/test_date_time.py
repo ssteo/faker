@@ -15,6 +15,7 @@ from faker.providers.date_time import Provider as DatetimeProvider
 from faker.providers.date_time.pl_PL import Provider as PlProvider
 from faker.providers.date_time.ar_AA import Provider as ArProvider
 from faker.providers.date_time.ar_EG import Provider as EgProvider
+from faker.providers.date_time.hy_AM import Provider as HyAmProvider
 
 import pytest
 
@@ -383,6 +384,16 @@ class TestDateTime(unittest.TestCase):
         assert isinstance(random_date, date)
         self.assertBetween(random_date, _30_years_ago, _20_years_ago)
 
+    def test_date_between_months(self):
+        today = date.today()
+        _2_months_ago = today - timedelta(days=2 * (365.24/12))
+        _9_months_ago = today - timedelta(days=9 * (365.24/12))
+
+        random_date = self.factory.date_between(start_date='-9M', end_date='-2M')
+
+        assert isinstance(random_date, date)
+        self.assertBetween(random_date, _9_months_ago, _2_months_ago)
+
     def test_parse_timedelta(self):
         from faker.providers.date_time import Provider
 
@@ -493,6 +504,23 @@ class TestPlPL(unittest.TestCase):
     def test_month(self):
         month = self.factory.month_name()
         assert month in PlProvider.MONTH_NAMES.values()
+
+
+class TestHyAm(unittest.TestCase):
+    """ Tests date_time in the hy_AM locale """
+
+    def setUp(self):
+        self.factory = Faker('hy_AM')
+
+    def test_day(self):
+        day = self.factory.day_of_week()
+        assert isinstance(day, six.string_types)
+        assert day in HyAmProvider.DAY_NAMES.values()
+
+    def test_month(self):
+        month = self.factory.month_name()
+        assert isinstance(month, six.string_types)
+        assert month in HyAmProvider.MONTH_NAMES.values()
 
 
 class TestAr(unittest.TestCase):

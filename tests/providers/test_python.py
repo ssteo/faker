@@ -5,6 +5,33 @@ import unittest
 from faker import Faker
 
 
+class TestPyint(unittest.TestCase):
+    def setUp(self):
+        self.factory = Faker()
+
+    def test_pyint(self):
+        self.assertIsInstance(self.factory.pyint(), int)
+
+    def test_pyint_bounds(self):
+        self.assertTrue(0 <= self.factory.pyint() <= 9999)
+
+    def test_pyint_step(self):
+        random_int = self.factory.pyint(step=2)
+        self.assertEqual(0, random_int % 2)
+
+    def test_pyint_bound_0(self):
+        self.assertEqual(0, self.factory.pyint(min_value=0, max_value=0))
+
+    def test_pyint_bound_positive(self):
+        self.assertEqual(5, self.factory.pyint(min_value=5, max_value=5))
+
+    def test_pyint_bound_negative(self):
+        self.assertEqual(-5, self.factory.pyint(min_value=-5, max_value=-5))
+
+    def test_pyint_range(self):
+        self.assertTrue(0 <= self.factory.pyint(min_value=0, max_value=2) <= 2)
+
+
 class TestPyfloat(unittest.TestCase):
     def setUp(self):
         self.factory = Faker()

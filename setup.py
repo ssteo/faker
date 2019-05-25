@@ -69,16 +69,16 @@ setup(
         "text-unidecode==1.2",
     ],
     tests_require=[
-        "email_validator>=1.0.1,<1.1.0",
+        "validators>=0.13.0",
         "ukpostcodeparser>=1.1.1",
-        "mock",
+        "mock ; python_version < '3.3'",
         "pytest>=3.8.0,<3.9",
-        "more-itertools<6.0.0",
+        "more-itertools<6.0.0 ; python_version < '3.0'",
         "random2==1.0.1",
         "freezegun==0.3.11",
     ],
     extras_require={
-        ':python_version=="2.7"': [
+        ':python_version<"3.3"': [
             'ipaddress',
         ],
     },

@@ -10,11 +10,13 @@ import six
 from faker import Faker
 from faker.providers.person.ar_AA import Provider as ArProvider
 from faker.providers.person.fi_FI import Provider as FiProvider
+from faker.providers.person.hy_AM import Provider as HyAmProvider
 from faker.providers.person.ne_NP import Provider as NeProvider
 from faker.providers.person.sv_SE import Provider as SvSEProvider
 from faker.providers.person.cs_CZ import Provider as CsCZProvider
 from faker.providers.person.pl_PL import (
     checksum_identity_card_number as pl_checksum_identity_card_number,
+    checksum_pesel_number as pl_checksum_pesel_number,
 )
 from faker.providers.person.zh_CN import Provider as ZhCNProvider
 from faker.providers.person.zh_TW import Provider as ZhTWProvider
@@ -54,7 +56,7 @@ class TestAr(unittest.TestCase):
         # All last names apply for all genders.
         assert hasattr(ArProvider, 'last_names')
 
-        # General first name.
+        # General last name.
         name = self.factory.last_name()
         assert name
         self.assertIsInstance(name, six.string_types)
@@ -205,6 +207,14 @@ class TestPlPL(unittest.TestCase):
         for _ in range(100):
             assert re.search(r'^[A-Z]{3}\d{6}$', self.factory.identity_card_number())
 
+    def test_pesel_number_checksum(self):
+        assert pl_checksum_pesel_number('31090655159') is True
+        assert pl_checksum_pesel_number('95030853577') is True
+        assert pl_checksum_pesel_number('05260953442') is True
+        assert pl_checksum_pesel_number('31090655158') is False
+        assert pl_checksum_pesel_number('95030853576') is False
+        assert pl_checksum_pesel_number('05260953441') is False
+
 
 class TestCsCZ(unittest.TestCase):
 
@@ -266,7 +276,7 @@ class TestZhCN(unittest.TestCase):
         # All last names apply for all genders.
         assert hasattr(ZhCNProvider, 'last_names')
 
-        # General first name.
+        # General last name.
         name = self.factory.last_name()
         assert name
         self.assertIsInstance(name, six.string_types)
@@ -348,7 +358,7 @@ class TestZhTW(unittest.TestCase):
         # All last names apply for all genders.
         assert hasattr(ZhTWProvider, 'last_names')
 
-        # General first name.
+        # General last name.
         name = self.factory.last_name()
         assert name
         self.assertIsInstance(name, six.string_types)
@@ -414,3 +424,63 @@ class TestZhTW(unittest.TestCase):
         first_romanized_name, last_romanized_name = name.split(' ')
         assert first_romanized_name in ZhTWProvider.first_romanized_names
         assert last_romanized_name in ZhTWProvider.last_romanized_names
+
+
+class TestHyAM(unittest.TestCase):
+    """ Tests person in the hy_AM locale """
+
+    def setUp(self):
+        self.factory = Faker('hy_AM')
+
+    def test_name(self):
+        # General name
+        name = self.factory.name()
+        self.assertIsInstance(name, six.string_types)
+
+        # Female name
+        name = self.factory.name_female()
+        self.assertIsInstance(name, six.string_types)
+
+        # Male name
+        name = self.factory.name_male()
+        self.assertIsInstance(name, six.string_types)
+
+    def test_first_name(self):
+        # General first name
+        name = self.factory.first_name()
+        self.assertIsInstance(name, six.string_types)
+        assert name in HyAmProvider.first_names
+
+        # Female first name
+        name = self.factory.first_name_female()
+        self.assertIsInstance(name, six.string_types)
+        assert name in HyAmProvider.first_names
+        assert name in HyAmProvider.first_names_female
+
+        # Male first name
+        name = self.factory.first_name_male()
+        self.assertIsInstance(name, six.string_types)
+        assert name in HyAmProvider.first_names
+        assert name in HyAmProvider.first_names_male
+
+    def test_last_name(self):
+        # There's no gender-specific last name in Armenian.
+        assert not hasattr(HyAmProvider, 'last_names_male')
+        assert not hasattr(HyAmProvider, 'last_names_female')
+        # All last names apply for all genders.
+        assert hasattr(HyAmProvider, 'last_names')
+
+        # General last name.
+        name = self.factory.last_name()
+        self.assertIsInstance(name, six.string_types)
+        assert name in HyAmProvider.last_names
+
+        # Females last name.
+        name = self.factory.last_name_female()
+        self.assertIsInstance(name, six.string_types)
+        assert name in HyAmProvider.last_names
+
+        # Male last name.
+        name = self.factory.last_name_male()
+        self.assertIsInstance(name, six.string_types)
+        assert name in HyAmProvider.last_names

@@ -90,12 +90,12 @@ packaged in "providers".
 
     from faker import Faker
     from faker.providers import internet
-    
+
     fake = Faker()
     fake.add_provider(internet)
-    
+
     print(fake.ipv4_private())
-    
+
 
 Check the `extended docs`_ for a list of `bundled providers`_ and a list of
 `community providers`_.
@@ -135,8 +135,8 @@ Included localized providers:
 -  `ar\_EG <https://faker.readthedocs.io/en/master/locales/ar_EG.html>`__ - Arabic (Egypt)
 -  `ar\_PS <https://faker.readthedocs.io/en/master/locales/ar_PS.html>`__ - Arabic (Palestine)
 -  `ar\_SA <https://faker.readthedocs.io/en/master/locales/ar_SA.html>`__ - Arabic (Saudi Arabia)
--  `bs\_BA <https://faker.readthedocs.io/en/master/locales/bs_BA.html>`__ - Bosnian
 -  `bg\_BG <https://faker.readthedocs.io/en/master/locales/bg_BG.html>`__ - Bulgarian
+-  `bs\_BA <https://faker.readthedocs.io/en/master/locales/bs_BA.html>`__ - Bosnian
 -  `cs\_CZ <https://faker.readthedocs.io/en/master/locales/cs_CZ.html>`__ - Czech
 -  `de\_DE <https://faker.readthedocs.io/en/master/locales/de_DE.html>`__ - German
 -  `dk\_DK <https://faker.readthedocs.io/en/master/locales/dk_DK.html>`__ - Danish
@@ -155,8 +155,10 @@ Included localized providers:
 -  `hi\_IN <https://faker.readthedocs.io/en/master/locales/hi_IN.html>`__ - Hindi
 -  `hr\_HR <https://faker.readthedocs.io/en/master/locales/hr_HR.html>`__ - Croatian
 -  `hu\_HU <https://faker.readthedocs.io/en/master/locales/hu_HU.html>`__ - Hungarian
+-  `hy\_AM <https://faker.readthedocs.io/en/master/locales/hy_AM.html>`__ - Armenian
 -  `it\_IT <https://faker.readthedocs.io/en/master/locales/it_IT.html>`__ - Italian
 -  `ja\_JP <https://faker.readthedocs.io/en/master/locales/ja_JP.html>`__ - Japanese
+-  `ka\_GE <https://faker.readthedocs.io/en/master/locales/ka_GE.html>`__ - Georgian (Georgia)
 -  `ko\_KR <https://faker.readthedocs.io/en/master/locales/ko_KR.html>`__ - Korean
 -  `lt\_LT <https://faker.readthedocs.io/en/master/locales/lt_LT.html>`__ - Lithuanian
 -  `lv\_LV <https://faker.readthedocs.io/en/master/locales/lv_LV.html>`__ - Latvian
@@ -174,7 +176,6 @@ Included localized providers:
 -  `uk\_UA <https://faker.readthedocs.io/en/master/locales/uk_UA.html>`__ - Ukrainian
 -  `zh\_CN <https://faker.readthedocs.io/en/master/locales/zh_CN.html>`__ - Chinese (China)
 -  `zh\_TW <https://faker.readthedocs.io/en/master/locales/zh_TW.html>`__ - Chinese (Taiwan)
--  `ka\_GE <https://faker.readthedocs.io/en/master/locales/ka_GE.html>`__ - Georgian (Georgia)
 
 Command line usage
 ------------------
@@ -355,23 +356,11 @@ you pinned the version of ``Faker`` down to the patch number.
 Tests
 -----
 
-Installing dependencies:
-
-.. code:: bash
-
-    $ pip install -e .
-
 Run tests:
 
 .. code:: bash
 
-    $ python setup.py test
-
-or
-
-.. code:: bash
-
-    $ python -m unittest -v tests
+    $ tox
 
 Write documentation for providers:
 

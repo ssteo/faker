@@ -12,10 +12,10 @@ def translit(text):
       'я': 'ya', 'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'Ye', 'Ë': 'E', 'Ж': 'Zh', 'З': 'Z', 'И': 'I',
       'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
       'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ы': 'Y', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
-      ' ': ' ', '-': '-', "'": "'",
      }
     for letter in text:
-        text = text.replace(letter, translit_dict[letter])
+        if letter.isalpha():
+            text = text.replace(letter, translit_dict[letter])
     return text
 
 
@@ -309,11 +309,7 @@ class Provider(PersonProvider):
         return self.random_element(self.middle_names)
 
     def middle_name_male(self):
-        if hasattr(self, 'middle_names_male'):
-            return self.random_element(self.middle_names_male)
-        return self.middle_name()
+        return self.random_element(self.middle_names_male)
 
     def middle_name_female(self):
-        if hasattr(self, 'middle_names_female'):
-            return self.random_element(self.middle_names_female)
-        return self.middle_name()
+        return self.random_element(self.middle_names_female)

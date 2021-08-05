@@ -22,8 +22,8 @@ Faker is heavily inspired by `PHP Faker`_, `Perl Faker`_, and by `Ruby Faker`_.
 Compatibility
 -------------
 
-Starting from version ``4.0.0``, ``Faker`` dropped support for Python 2 and only supports Python
-3.5 and above. If you still need Python 2 compatibility, please install version ``3.0.1`` in the
+Starting from version ``4.0.0``, ``Faker`` dropped support for Python 2 and from version ``5.0.0``
+only supports Python 3.6 and above. If you still need Python 2 compatibility, please install version ``3.0.1`` in the
 meantime, and please consider updating your codebase to support Python 3 so you can enjoy the
 latest features ``Faker`` has to offer. Please see the `extended docs`_ for more details, especially
 if you are upgrading from version ``2.0.4`` and below as there might be breaking changes.
@@ -165,12 +165,21 @@ providers package. The localization of Faker is an ongoing process, for
 which we need your help. Please don't hesitate to create a localized
 provider for your own locale and submit a Pull Request (PR).
 
+Optimizations
+-------------
+The Faker constructor takes a performance-related argument called
+``use_weighting``. It specifies whether to attempt to have the frequency
+of values match real-world frequencies (e.g. the English name Gary would
+be much more frequent than the name Lorimer). If ``use_weighting`` is ``False``,
+then all items have an equal chance of being selected, and the selection
+process is much faster. The default is ``True``.
+
 Command line usage
 ------------------
 
 When installed, you can invoke faker from the command-line:
 
-.. code:: bash
+.. code:: console
 
     faker [-h] [--version] [-o output]
           [-l {bg_BG,cs_CZ,...,zh_CN,zh_TW}]
@@ -210,7 +219,7 @@ Where:
 
 Examples:
 
-.. code:: bash
+.. code:: console
 
     $ faker address
     968 Bahringer Garden Apt. 722
@@ -438,8 +447,8 @@ Credits
     :target: https://coveralls.io/r/joke2k/faker?branch=master
     :alt: Test coverage
 
-.. |unix_build| image:: https://img.shields.io/travis/joke2k/faker/master.svg?style=flat-square&label=unix%20build
-    :target: http://travis-ci.org/joke2k/faker
+.. |unix_build| image:: https://github.com/joke2k/faker/workflows/Python%20Tests/badge.svg
+    :target: https://github.com/joke2k/faker/actions?query=workflow%3A%22Python+Tests%22
     :alt: Build status of the master branch on Mac/Linux
 
 .. |windows_build|  image:: https://img.shields.io/appveyor/ci/joke2k/faker/master.svg?style=flat-square&label=windows%20build

@@ -15,8 +15,10 @@ from faker.providers.company.nl_NL import Provider as NlNlCompanyProvider
 from faker.providers.company.pl_PL import Provider as PlPlCompanyProvider
 from faker.providers.company.pl_PL import company_vat_checksum, local_regon_checksum, regon_checksum
 from faker.providers.company.pt_BR import company_id_checksum
+from faker.providers.company.ro_RO import Provider as RoRoCompanyProvider
 from faker.providers.company.ru_RU import Provider as RuRuCompanyProvider
 from faker.providers.company.ru_RU import calculate_checksum
+from faker.providers.company.th_TH import Provider as ThThCompanyProvider
 from faker.providers.company.tr_TR import Provider as TrTrCompanyProvider
 
 
@@ -356,6 +358,45 @@ class TestItIt:
             assert company_vat[9:12] == expected
 
 
+class TestThTh:
+    """Test th_TH company provider methods"""
+
+    def test_company_prefix(self, faker, num_samples):
+        for _ in range(num_samples):
+            prefix = faker.company_prefix()
+            assert isinstance(prefix, str)
+            assert prefix in ThThCompanyProvider.company_prefixes
+
+    def test_company_suffix(self, faker, num_samples):
+        for _ in range(num_samples):
+            suffix = faker.company_suffix()
+            assert isinstance(suffix, str)
+            assert suffix in ThThCompanyProvider.company_suffixes
+
+    def test_company_limited_prefix(self, faker, num_samples):
+        for _ in range(num_samples):
+            prefix = faker.company_limited_prefix()
+            assert isinstance(prefix, str)
+            assert prefix in ThThCompanyProvider.company_limited_prefixes
+
+    def test_company_limited_suffix(self, faker, num_samples):
+        for _ in range(num_samples):
+            suffix = faker.company_limited_suffix()
+            assert isinstance(suffix, str)
+            assert suffix in ThThCompanyProvider.company_limited_suffixes
+
+    def test_nonprofit_prefix(self, faker, num_samples):
+        for _ in range(num_samples):
+            prefix = faker.nonprofit_prefix()
+            assert isinstance(prefix, str)
+            assert prefix in ThThCompanyProvider.nonprofit_prefixes
+
+    def test_company(self, faker, num_samples):
+        for _ in range(num_samples):
+            company = faker.company()
+            assert isinstance(company, str)
+
+
 class TestTrTr:
     """Test tr_TR company provider methods"""
 
@@ -370,3 +411,13 @@ class TestTrTr:
             company = faker.large_company()
             assert isinstance(company, str)
             assert company in TrTrCompanyProvider.large_companies
+
+
+class TestRoRo:
+    """Test ro_RO company provider methods"""
+
+    def test_company_suffix(self, faker, num_samples):
+        for _ in range(num_samples):
+            suffix = faker.company_suffix()
+            assert isinstance(suffix, str)
+            assert suffix in RoRoCompanyProvider.company_suffixes

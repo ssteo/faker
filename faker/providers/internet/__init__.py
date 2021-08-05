@@ -121,7 +121,7 @@ class Provider(BaseProvider):
     @lowercase
     def email(self, domain=None):
         if domain:
-            email = '{}@{}'.format(self.user_name(), domain)
+            email = f'{self.user_name()}@{domain}'
         else:
             pattern = self.random_element(self.email_formats)
             email = "".join(self.generator.parse(pattern).split(" "))
@@ -270,10 +270,7 @@ class Provider(BaseProvider):
         if schemes is None:
             schemes = ['http', 'https']
 
-        pattern = '{}://{}'.format(
-            self.random_element(schemes) if schemes else "",
-            self.random_element(self.url_formats),
-        )
+        pattern = f'{self.random_element(schemes) if schemes else ""}://{self.random_element(self.url_formats)}'
 
         return self.generator.parse(pattern)
 
@@ -285,14 +282,14 @@ class Provider(BaseProvider):
         """
         # If `address_class` has an unexpected value, use the whole IPv4 pool
         if address_class in _IPv4Constants._network_classes.keys():
-            networks_attr = '_cached_all_class_{}_networks'.format(address_class)
+            networks_attr = f'_cached_all_class_{address_class}_networks'
             all_networks = [_IPv4Constants._network_classes[address_class]]
         else:
             networks_attr = '_cached_all_networks'
             all_networks = [ip_network('0.0.0.0/0')]
 
         # Return cached network and weight data if available
-        weights_attr = '{}_weights'.format(networks_attr)
+        weights_attr = f'{networks_attr}_weights'
         if hasattr(self, networks_attr) and hasattr(self, weights_attr):
             return getattr(self, networks_attr), getattr(self, weights_attr)
 
@@ -321,8 +318,8 @@ class Provider(BaseProvider):
             address_class = self.ipv4_network_class()
 
         # Return cached network and weight data if available for a specific address class
-        networks_attr = '_cached_private_class_{}_networks'.format(address_class)
-        weights_attr = '{}_weights'.format(networks_attr)
+        networks_attr = f'_cached_private_class_{address_class}_networks'
+        weights_attr = f'{networks_attr}_weights'
         if hasattr(self, networks_attr) and hasattr(self, weights_attr):
             return getattr(self, networks_attr), getattr(self, weights_attr)
 
@@ -356,8 +353,8 @@ class Provider(BaseProvider):
             address_class = self.ipv4_network_class()
 
         # Return cached network and weight data if available for a specific address class
-        networks_attr = '_cached_public_class_{}_networks'.format(address_class)
-        weights_attr = '{}_weights'.format(networks_attr)
+        networks_attr = f'_cached_public_class_{address_class}_networks'
+        weights_attr = f'{networks_attr}_weights'
         if hasattr(self, networks_attr) and hasattr(self, weights_attr):
             return getattr(self, networks_attr), getattr(self, weights_attr)
 
@@ -566,3 +563,45 @@ class Provider(BaseProvider):
         height_ = height or self.random_int(max=1024)
         placeholder_url = self.random_element(self.image_placeholder_services)
         return placeholder_url.format(width=width_, height=height_)
+
+    def iana_id(self):
+        """Returns IANA Registrar ID
+        https://www.iana.org/assignments/registrar-ids/registrar-ids.xhtml
+
+        :rtype: str
+        """
+
+        return str(self.random_int(min=1, max=8888888))
+
+    def ripe_id(self):
+        """Returns RIPE Organization ID
+        https://www.ripe.net/manage-ips-and-asns/db/support/organisation-object-in-the-ripe-database
+
+        :rtype: str
+        """
+
+        lex = '?' * self.random_int(min=2, max=4)
+        num = '%' * self.random_int(min=1, max=5)
+        return self.bothify(f'ORG-{lex}{num}-RIPE').upper()
+
+    def nic_handle(self, suffix='FAKE'):
+        """Returns NIC Handle ID
+        https://www.apnic.net/manage-ip/using-whois/guide/person/
+
+        :rtype: str
+        """
+
+        if len(suffix) < 2:
+            raise ValueError('suffix length must be greater than or equal to 2')
+
+        lex = '?' * self.random_int(min=2, max=4)
+        num = '%' * self.random_int(min=1, max=5)
+        return self.bothify(f'{lex}{num}-{suffix}').upper()
+
+    def nic_handles(self, count=1, suffix='????'):
+        """Returns NIC Handle ID list
+
+        :rtype: list[str]
+        """
+
+        return [self.nic_handle(suffix=suffix) for _ in range(count)]

@@ -712,8 +712,13 @@ class Provider(PersonProvider):
         Polish: Powszechny Elektroniczny System Ewidencji Ludności.
 
         PESEL has 11 digits which identifies just one person.
-        pesel_date: if person was born in 1900-2000, december is 12. If person was born > 2000, we have to add 20 to
-        month, so december is 32.
+        pesel_date: if person was born in
+                1900-1999 - month field number is not modified
+                2000–2099 – month field number is increased by 20
+                2100–2199 – month + 40
+                2200–2299 – month + 60
+                1800–1899 – month + 80
+                outside range 1800-2299 function will raise ValueError
         pesel_sex: last digit identifies person's sex. Even for females, odd for males.
 
         https://en.wikipedia.org/wiki/PESEL
@@ -721,18 +726,29 @@ class Provider(PersonProvider):
         if date_of_birth is None:
             date_of_birth = self.generator.date_of_birth()
 
-        pesel_date = '{year}{month:02d}{day:02d}'.format(
-            year=date_of_birth.year, day=date_of_birth.day,
-            month=date_of_birth.month if date_of_birth.year < 2000 else date_of_birth.month + 20)
-        pesel_date = pesel_date[2:]
+        if 1800 <= date_of_birth.year <= 1899:
+            month = date_of_birth.month + 80
+        elif 1900 <= date_of_birth.year <= 1999:
+            month = date_of_birth.month
+        elif 2000 <= date_of_birth.year <= 2099:
+            month = date_of_birth.month + 20
+        elif 2100 <= date_of_birth.year <= 2199:
+            month = date_of_birth.month + 40
+        elif 2200 <= date_of_birth.year <= 2299:
+            month = date_of_birth.month + 60
+        else:
+            raise ValueError("Date of birth is out of supported range 1800-2299")
 
+        year = date_of_birth.year % 100
+
+        pesel_date = f'{year:02d}{month:02d}{date_of_birth.day:02d}'
         pesel_core = ''.join(map(str, (self.random_digit() for _ in range(3))))
         pesel_sex = self.random_digit()
 
         if (sex == 'M' and pesel_sex % 2 == 0) or (sex == 'F' and pesel_sex % 2 == 1):
             pesel_sex = (pesel_sex + 1) % 10
 
-        pesel = '{date}{core}{sex}'.format(date=pesel_date, core=pesel_core, sex=pesel_sex)
+        pesel = f'{pesel_date}{pesel_core}{pesel_sex}'
         pesel += str(self.pesel_compute_check_digit(pesel))
 
         return pesel
@@ -755,7 +771,7 @@ class Provider(PersonProvider):
             core[-1] = (core[-1] + 1) % 10
             check_digit = self.pwz_doctor_compute_check_digit(core)
 
-        return '{}{}'.format(check_digit, ''.join(map(str, core)))
+        return f'{check_digit}{"".join(map(str, core))}'
 
     def pwz_nurse(self, kind='nurse'):
         """
@@ -771,7 +787,7 @@ class Provider(PersonProvider):
         core = [self.random_digit() for _ in range(5)]
         kind_char = 'A' if kind == 'midwife' else 'P'
 
-        return '{:02d}{}{}'.format(region, ''.join(map(str, core)), kind_char)
+        return f'{region:02d}{"".join(map(str, core))}{kind_char}'
 
     tax_office_codes = (
         '101', '102', '103', '104', '105', '106', '107', '108', '109', '111', '112', '113', '114', '115', '116', '117',

@@ -156,12 +156,7 @@ class Provider(BaseProvider):
         start_year = self.random_int(min=0, max=99)
         serial = self.random_int(min=1, max=9999)
 
-        num = "{:02d}{:02d}{:02d}{:04d}".format(
-            office,
-            start_year,
-            birth_year,
-            serial,
-        )
+        num = f'{office:02d}{start_year:02d}{birth_year:02d}{serial:04d}'
 
         check = ssn_checksum(map(int, num))
         num += str(check)
@@ -226,6 +221,7 @@ class Provider(BaseProvider):
             second_surname = random.choice(ALPHABET)
             given_name = random.choice(ALPHABET)
             name_initials = first_surname + second_surname + given_name
+            name_initials = FORBIDDEN_WORDS.get(name_initials, name_initials)
         else:
             name_initials = (
                 self.random_uppercase_letter() +

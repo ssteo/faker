@@ -1,7 +1,9 @@
 import re
 
 from calendar import timegm
-from datetime import MAXYEAR, date, datetime, timedelta
+from datetime import MAXYEAR
+from datetime import date as dtdate
+from datetime import datetime, timedelta
 
 from dateutil import relativedelta
 from dateutil.tz import gettz, tzlocal, tzutc
@@ -19,10 +21,10 @@ def datetime_to_timestamp(dt):
 
 def timestamp_to_datetime(timestamp, tzinfo):
     if tzinfo is None:
-        pick = datetime.fromtimestamp(timestamp, tzlocal())
+        pick = convert_timestamp_to_datetime(timestamp, tzlocal())
         pick = pick.astimezone(tzutc()).replace(tzinfo=None)
     else:
-        pick = datetime.fromtimestamp(timestamp, tzinfo)
+        pick = convert_timestamp_to_datetime(timestamp, tzinfo)
 
     return pick
 
@@ -1376,6 +1378,18 @@ class Provider(BaseProvider):
                   'continent': 'Europe',
                   'name': 'United Kingdom',
                   'capital': 'London'},
+                 {'timezones': ['Asia/Taipei'],
+                  'alpha-2-code': 'TW',
+                  'alpha-3-code': 'TWN',
+                  'continent': 'Asia',
+                  'name': 'Taiwan',
+                  'capital': 'Taipei'},
+                 {'timezones': ['Asia/Gaza', 'Asia/Hebron'],
+                  'alpha-2-code': 'PS',
+                  'alpha-3-code': 'PSE',
+                  'continent': 'Asia',
+                  'name': 'Palestine',
+                  'capital': 'Ramallah'},
                  ]
 
     regex = re.compile(timedelta_pattern)
@@ -1497,7 +1511,7 @@ class Provider(BaseProvider):
     def _parse_date_string(cls, value):
         parts = cls.regex.match(value)
         if not parts:
-            raise ParseError("Can't parse date string `{}`.".format(value))
+            raise ParseError(f"Can't parse date string `{value}`")
         parts = parts.groupdict()
         time_params = {}
         for (name_, param_) in parts.items():
@@ -1514,7 +1528,7 @@ class Provider(BaseProvider):
             time_params['days'] += 30.42 * time_params.pop('months')
 
         if not time_params:
-            raise ParseError("Can't parse date string `{}`.".format(value))
+            raise ParseError(f"Can't parse date string `{value}`")
         return time_params
 
     @classmethod
@@ -1526,11 +1540,11 @@ class Provider(BaseProvider):
             return timedelta(**time_params).total_seconds()
         if isinstance(value, (int, float)):
             return value
-        raise ParseError("Invalid format for timedelta '{}'".format(value))
+        raise ParseError(f"Invalid format for timedelta {value!r}")
 
     @classmethod
     def _parse_date_time(cls, value, tzinfo=None):
-        if isinstance(value, (datetime, date)):
+        if isinstance(value, (datetime, dtdate)):
             return datetime_to_timestamp(value)
         now = datetime.now(tzinfo)
         if isinstance(value, timedelta):
@@ -1542,15 +1556,15 @@ class Provider(BaseProvider):
             return datetime_to_timestamp(now + timedelta(**time_params))
         if isinstance(value, int):
             return datetime_to_timestamp(now + timedelta(value))
-        raise ParseError("Invalid format for date '{}'".format(value))
+        raise ParseError(f"Invalid format for date {value!r}")
 
     @classmethod
     def _parse_date(cls, value):
         if isinstance(value, datetime):
             return value.date()
-        elif isinstance(value, date):
+        elif isinstance(value, dtdate):
             return value
-        today = date.today()
+        today = dtdate.today()
         if isinstance(value, timedelta):
             return today + value
         if isinstance(value, str):
@@ -1560,7 +1574,7 @@ class Provider(BaseProvider):
             return today + timedelta(**time_params)
         if isinstance(value, int):
             return today + timedelta(value)
-        raise ParseError("Invalid format for date '{}'".format(value))
+        raise ParseError(f"Invalid format for date {value!r}")
 
     def date_time_between(self, start_date='-30y', end_date='now', tzinfo=None):
         """
@@ -1685,8 +1699,11 @@ class Provider(BaseProvider):
         )
         try:
             if tzinfo is None:
-                pick = datetime.fromtimestamp(timestamp, tzlocal())
-                pick = pick.astimezone(tzutc()).replace(tzinfo=None)
+                pick = convert_timestamp_to_datetime(timestamp, tzlocal())
+                try:
+                    pick = pick.astimezone(tzutc()).replace(tzinfo=None)
+                except OSError:
+                    pass
             else:
                 pick = datetime.fromtimestamp(timestamp, tzinfo)
         except OverflowError:
@@ -1835,9 +1852,9 @@ class Provider(BaseProvider):
         :example Date('2012-04-04')
         :return Date
         """
-        today = date.today()
-        this_century_start = date(today.year - (today.year % 100), 1, 1)
-        next_century_start = date(this_century_start.year + 100, 1, 1)
+        today = dtdate.today()
+        this_century_start = dtdate(today.year - (today.year % 100), 1, 1)
+        next_century_start = dtdate(this_century_start.year + 100, 1, 1)
 
         if before_today and after_today:
             return self.date_between_dates(
@@ -1858,9 +1875,9 @@ class Provider(BaseProvider):
         :example Date('2012-04-04')
         :return Date
         """
-        today = date.today()
-        this_decade_start = date(today.year - (today.year % 10), 1, 1)
-        next_decade_start = date(this_decade_start.year + 10, 1, 1)
+        today = dtdate.today()
+        this_decade_start = dtdate(today.year - (today.year % 10), 1, 1)
+        next_decade_start = dtdate(this_decade_start.year + 10, 1, 1)
 
         if before_today and after_today:
             return self.date_between_dates(this_decade_start, next_decade_start)
@@ -1880,9 +1897,9 @@ class Provider(BaseProvider):
         :example Date('2012-04-04')
         :return Date
         """
-        today = date.today()
+        today = dtdate.today()
         this_year_start = today.replace(month=1, day=1)
-        next_year_start = date(today.year + 1, 1, 1)
+        next_year_start = dtdate(today.year + 1, 1, 1)
 
         if before_today and after_today:
             return self.date_between_dates(this_year_start, next_year_start)
@@ -1903,7 +1920,7 @@ class Provider(BaseProvider):
         :example DateTime('2012-04-04 11:02:02')
         :return DateTime
         """
-        today = date.today()
+        today = dtdate.today()
         this_month_start = today.replace(day=1)
 
         next_month_start = this_month_start + \
@@ -1946,8 +1963,7 @@ class Provider(BaseProvider):
             def distrib(dt): return self.generator.random.uniform(0, precision)  # noqa
 
         if not callable(distrib):
-            raise ValueError(
-                "`distrib` must be a callable. Got {} instead.".format(distrib))
+            raise ValueError(f"`distrib` must be a callable. Got {distrib} instead.")
 
         datapoint = start_date
         while datapoint < end_date:
@@ -2034,3 +2050,11 @@ class Provider(BaseProvider):
         dob = self.date_time_ad(tzinfo=tzinfo, start_datetime=start_date, end_datetime=end_date).date()
 
         return dob if dob != start_date else dob + timedelta(days=1)
+
+
+def convert_timestamp_to_datetime(timestamp, tzinfo):
+    import datetime as dt
+    if timestamp >= 0:
+        return dt.datetime.fromtimestamp(timestamp, tzinfo)
+    else:
+        return dt.datetime(1970, 1, 1, tzinfo=tzinfo) + dt.timedelta(seconds=int(timestamp))

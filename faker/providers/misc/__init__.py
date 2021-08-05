@@ -2,10 +2,13 @@ import csv
 import hashlib
 import io
 import json
+import re
 import string
 import tarfile
 import uuid
 import zipfile
+
+from faker.exceptions import UnsupportedFeature
 
 from .. import BaseProvider
 
@@ -280,6 +283,46 @@ class Provider(BaseProvider):
                 file_buffer.close()
         return tar_buffer.getvalue()
 
+    def image(self, size=(256, 256), image_format='png', hue=None, luminosity=None):
+        """Generate an image and draw a random polygon on it using the Python Image Library.
+        Without it installed, this provider won't be functional. Returns the bytes representing
+        the image in a given format.
+
+        The argument ``size`` must be a 2-tuple containing (width, height) in pixels. Defaults to 256x256.
+
+        The argument ``image_format`` can be any valid format to the underlying library like ``'tiff'``,
+        ``'jpeg'``, ``'pdf'`` or ``'png'`` (default). Note that some formats need present system libraries
+        prior to building the Python Image Library.
+        Refer to https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html for details.
+
+        The arguments ``hue`` and ``luminosity`` are the same as in the color provider and are simply forwarded to
+        it to generate both the background and the shape colors. Therefore, you can ask for a "dark blue" image, etc.
+
+        :sample size=2: size=(2, 2), hue='purple', luminosity='bright', image_format='pdf'
+        :sample size=2: size=(16, 16), hue=[90,270], image_format='ico'
+        """
+        try:
+            import PIL.Image
+            import PIL.ImageDraw
+        except ImportError:
+            raise UnsupportedFeature("`image` requires the `Pillow` python library.", "image")
+
+        (width, height) = size
+        image = PIL.Image.new('RGB', size, self.generator.color(hue=hue, luminosity=luminosity))
+        draw = PIL.ImageDraw.Draw(image)
+        draw.polygon(
+            [
+                (self.random_int(0, width), self.random_int(0, height))
+                for _ in range(self.random_int(3, 12))
+            ],
+            fill=self.generator.color(hue=hue, luminosity=luminosity),
+            outline=self.generator.color(hue=hue, luminosity=luminosity),
+        )
+        with io.BytesIO() as fobj:
+            image.save(fobj, format=image_format)
+            fobj.seek(0)
+            return fobj.read()
+
     def dsv(self, dialect='faker-csv', header=None,
             data_columns=('{{name}}', '{{address}}'),
             num_rows=10, include_row_ids=False, **fmtparams):
@@ -399,12 +442,12 @@ class Provider(BaseProvider):
         data structures it is recommended to use the dictionary format.
 
         Data Column Dictionary format:
-            {'key name': 'definition'}}
+            {'key name': 'definition'}
 
-        The definition can simply be the 'name:argument_group' of a provider
-        method, or can also be string {{ tokens }} that are passed to python
-        provider pystr_format() method for complex string generation.
-        Argument Groups are used to pass arguments to the provider methods.
+        The definition can be 'provider', 'provider:argument_group', tokenized
+        'string {{ provider:argument_group }}' that is passed to the python
+        provider method pystr_format() for generation, or a fixed '@word'.
+        Using Lists, Tuples, and Dicts as a definition for structure.
 
         Example:
             fake.set_arguments('top_half', {'min_value': 50, 'max_value': 100})
@@ -426,8 +469,8 @@ class Provider(BaseProvider):
         :return: Serialized JSON data
         :rtype: str
 
-        :sample: data_columns={'ID': 'pyint', 'Details': {'Name': 'name',
-                'Address': 'address'}}, num_rows=1
+        :sample: data_columns={'Spec': '@1.0.1', 'ID': 'pyint',
+                'Details': {'Name': 'name', 'Address': 'address'}}, num_rows=2
         :sample: data_columns={'Candidates': ['name', 'name', 'name']},
                 num_rows=1
         :sample: data_columns=[('Name', 'name'), ('Points', 'pyint',
@@ -449,7 +492,7 @@ class Provider(BaseProvider):
                     raise TypeError('Invalid arguments type. Must be a dictionary')
 
                 if name is None:
-                    return self._format_selection(definition, **kwargs)
+                    return self._value_format_selection(definition, **kwargs)
 
                 if isinstance(definition, tuple):
                     entry[name] = process_list_structure(definition)
@@ -457,28 +500,27 @@ class Provider(BaseProvider):
                     entry[name] = [process_list_structure([item])
                                    for item in definition]
                 else:
-                    entry[name] = self._format_selection(definition, **kwargs)
+                    entry[name] = self._value_format_selection(definition, **kwargs)
             return entry
 
         def process_dict_structure(data: dict) -> dict:
             entry = {}
 
             if isinstance(data, str):
-                return self._format_selection(data)
+                return self._value_format_selection(data)
 
-            if isinstance(data, (float, int)):
-                return data
+            if isinstance(data, dict):
+                for name, definition in data.items():
+                    if isinstance(definition, (tuple, list, set)):
+                        entry[name] = [process_dict_structure(item)
+                                       for item in definition]
+                    elif isinstance(definition, (dict, int, float, bool)):
+                        entry[name] = process_dict_structure(definition)
+                    else:
+                        entry[name] = self._value_format_selection(definition)
+                return entry
 
-            for name, definition in data.items():
-                if isinstance(definition, (tuple, list)):
-                    entry[name] = [process_dict_structure(item)
-                                   for item in definition]
-                elif isinstance(definition, (dict, int, float)):
-                    entry[name] = process_dict_structure(definition)
-                else:
-                    entry[name] = self._format_selection(definition)
-
-            return entry
+            return data
 
         def create_json_structure(data_columns) -> dict:
             if isinstance(data_columns, dict):
@@ -510,9 +552,11 @@ class Provider(BaseProvider):
         Data Column List format
             [('field width', 'definition', {'arguments'})]
 
-        The definition can simply be the 'name:argument_group' of a provider
-        method, or can also be string tokens that are passed to python
-        provider method pystr_format() for data generation.
+        The definition can be 'provider', 'provider:argument_group', tokenized
+        'string {{ provider:argument_group }}' that is passed to the python
+        provider method pystr_format() for generation, or a fixed '@word'.
+        Using Lists, Tuples, and Dicts as a definition for structure.
+
         Argument Groups can be used to pass arguments to the provider methods,
         but will override the arguments supplied in the tuple record.
 
@@ -530,7 +574,7 @@ class Provider(BaseProvider):
         :rtype: str
 
         :sample: data_columns=[(20, 'name'), (3, 'pyint', {'min_value': 50,
-                'max_value': 100})], align='right', num_rows=1
+                'max_value': 100})], align='right', num_rows=2
         """
         default_data_columns = [
             (20, 'name'),
@@ -553,24 +597,38 @@ class Provider(BaseProvider):
                 if not isinstance(kwargs, dict):
                     raise TypeError('Invalid arguments type. Must be a dictionary')
 
-                result = self._format_selection(definition, **kwargs)
-                field = "{0:%s%s}" % (align_map.get(align, '<'), width)
-                row.append(field.format(result)[:width])
+                result = self._value_format_selection(definition, **kwargs)
+                row.append(f'{result:{align_map.get(align, "<")}{width}}'[:width])
 
             data.append(''.join(row))
         return '\n'.join(data)
 
-    def _format_selection(self, definition, **kwargs):
+    def _value_format_selection(self, definition, **kwargs):
         """
-        Formats the string with PyStr Format if special characters are found.
+        Formats the string in different ways depending on it's contents.
+
+        The return can be the '@word' itself, a '{{ token }}' passed to PyStr,
+        or a 'provider:argument_group' format field that returns potentially
+        a non-string type.
+
+        This ensures that Numbers, Boolean types that are generated in the
+        JSON structures in there proper type, and not just strings.
         """
-        if '{{' in definition and '}}' in definition:
+
+        # Check for PyStr first as complex strings may start with @
+        if re.match(r'.*\{\{.*\}\}.*', definition):
             return self.generator.pystr_format(definition)
 
-        if definition.count(':') == 1:
+        # Check for fixed @words that won't be generated
+        if re.match(r'^@.*', definition):
+            return definition.lstrip('@')
+
+        # Check if a argument group has been supplied
+        if re.match(r'^[a-zA-Z0-9_-]*:\w', definition):
             definition, argument_group = definition.split(':')
             arguments = self.generator.get_arguments(argument_group.strip())
 
             return self.generator.format(definition.strip(), **arguments)
 
+        # Assume the string is refering to a provider
         return self.generator.format(definition, **kwargs)

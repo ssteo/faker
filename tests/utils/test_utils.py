@@ -1,17 +1,19 @@
 import json
-import os
 import unittest
 
 from importlib import import_module
+from pathlib import Path
+
+import faker
 
 from faker.config import META_PROVIDERS_MODULES, PROVIDERS
 from faker.generator import random
 from faker.utils.checksums import calculate_luhn, luhn_checksum
 from faker.utils.datasets import add_dicts
 from faker.utils.distribution import choices_distribution, choices_distribution_unique
-from faker.utils.loading import find_available_locales, find_available_providers
+from faker.utils.loading import find_available_locales, find_available_providers, get_path
 
-TEST_DIR = os.path.dirname(__file__)
+TEST_DIR = Path(__file__).resolve().parent
 
 
 class UtilsTestCase(unittest.TestCase):
@@ -22,8 +24,7 @@ class UtilsTestCase(unittest.TestCase):
         sample = choices_distribution(a, p)[0]
         assert sample in a
 
-        with open(os.path.join(TEST_DIR, 'random_state.json'), 'r') as fh:
-            random_state = json.load(fh)
+        random_state = json.loads((TEST_DIR / 'random_state.json').read_text())
         random_state[1] = tuple(random_state[1])
 
         random.setstate(random_state)
@@ -59,6 +60,10 @@ class UtilsTestCase(unittest.TestCase):
 
         result = add_dicts(t1, t2, t3)
         assert result == {'a': 1, 'c': 3, 'b': 3, 'd': 4}
+
+    def test_get_path(self):
+        result = get_path(faker)
+        assert isinstance(result, str)
 
     def test_find_available_locales(self):
         result = find_available_locales(PROVIDERS)

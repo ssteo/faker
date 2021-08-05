@@ -13,7 +13,7 @@ class TestBaseProvider:
 
     def test_locale(self, faker, num_samples):
         locales = [
-            '{}_{}'.format(language, region)
+            f'{language}_{region}'
             for language, regions in BaseProvider.language_locale_codes.items()
             for region in regions
         ]
@@ -152,6 +152,16 @@ class TestBaseProvider:
             letter = faker.random_letter()
             assert letter.isalpha()
 
+    @pytest.mark.parametrize('length', [0, 1, 2], ids=[
+        'empty_list', 'list_with_one_element', 'list_with_two_elements',
+    ])
+    def test_random_letters(self, faker, length):
+        letters = faker.random_letters(length=length)
+        assert len(letters) == length
+        assert isinstance(letters, list)
+        for letter in letters:
+            assert letter.isalpha()
+
     def test_random_lowercase_letter(self, faker, num_samples):
         for _ in range(num_samples):
             letter = faker.random_lowercase_letter()
@@ -218,7 +228,7 @@ class TestBaseProvider:
         for _ in range(num_samples):
             res = faker.randomize_nb_elements(number=number, le=True)
             assert res >= lower_bound
-            assert res <= number, "'{}' is not <= than '{}'".format(res, number)
+            assert res <= number, f'{res!r} is not <= than {number!r}'
 
         for _ in range(num_samples):
             res = faker.randomize_nb_elements(number=number, ge=True)

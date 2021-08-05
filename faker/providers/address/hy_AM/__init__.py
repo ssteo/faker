@@ -3,6 +3,7 @@ from .. import Provider as AddressProvider
 
 class Provider(AddressProvider):
 
+    city_formats = ('{{first_name}}',)
     city_prefixes = ('ք.',)
     city_suffixes = ('',)
     street_prefixes = ('փողոց', 'պողոտա')
@@ -642,11 +643,13 @@ class Provider(AddressProvider):
         """
         return self.numerify(self.random_element(self.secondary_address_formats))
 
-    def state(self):
+    def administrative_unit(self):
         """
         :example 'Կոտայք'
         """
         return self.random_element(self.states)
+
+    state = administrative_unit
 
     def state_abbr(self):
         """

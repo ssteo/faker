@@ -25,6 +25,8 @@ from faker.providers.ssn.no_NO import checksum as no_checksum
 from faker.providers.ssn.pl_PL import calculate_month as pl_calculate_mouth
 from faker.providers.ssn.pl_PL import checksum as pl_checksum
 from faker.providers.ssn.pt_BR import checksum as pt_checksum
+from faker.providers.ssn.ro_RO import ssn_checksum as ro_ssn_checksum
+from faker.providers.ssn.ro_RO import vat_checksum as ro_vat_checksum
 from faker.utils.checksums import luhn_checksum
 
 
@@ -60,7 +62,7 @@ class TestSvSE(unittest.TestCase):
             return False
 
         try:
-            if date_str != datetime.strptime(date_str, '{}%m%d'.format(year_fmt)).strftime('{}%m%d'.format(year_fmt)):
+            if date_str != datetime.strptime(date_str, f'{year_fmt}%m%d').strftime(f'{year_fmt}%m%d'):
                 raise ValueError
             return True
         except ValueError:
@@ -758,10 +760,9 @@ class TestHuHU(unittest.TestCase):
             assert len(ssn) <= 12
 
         for _ in range(100):
-            dob_val = '{:02d}{:02d}{:02d}'.format(
-                self.fake.random_int(0, 99),
-                self.fake.random_int(1, 12),
-                self.fake.random_int(1, 31))
+            dob_val = (f'{self.fake.random_int(0, 99):02d}'
+                       f'{self.fake.random_int(1, 12):02d}'
+                       f'{self.fake.random_int(1, 31):02d}')
             dob = self.fake.random.choice([None, dob_val])
             gender = self.fake.random.choice([None, 'F', 'M', 'z'])
             try:
@@ -939,6 +940,20 @@ class TestFilPh(TestEnPh):
         Faker.seed(0)
 
 
+class TestThTH(unittest.TestCase):
+    def setUp(self):
+        self.fake = Faker('th_TH')
+        Faker.seed(0)
+
+    def test_ssn(self):
+        for _ in range(100):
+            assert re.search(r'^[1-8]-[1-9]\d{3}-\d{5}-\d{2}-\d$', self.fake.ssn())
+
+    def test_vat_id(self):
+        for _ in range(100):
+            assert re.search(r'^[1-8]-[1-9]\d{3}-\d{5}-\d{2}-\d$', self.fake.vat_id())
+
+
 class TestTlPh(TestEnPh):
 
     def setup_faker(self):
@@ -962,7 +977,7 @@ class TestTrTr(unittest.TestCase):
         for sample in self.samples:
             first_ten_number = sample[:-1]
             last_part = sample[-1]
-            assert sum(list(map(lambda x: int(x), '{}'.format(first_ten_number)))) % 10 == last_part
+            assert sum(int(x) for x in f'{first_ten_number}') % 10 == last_part
 
 
 class TestEnIn(unittest.TestCase):
@@ -1010,3 +1025,43 @@ class TestZhCN(unittest.TestCase):
         # Males have odd number at index 17
         ssn = self.fake.ssn(gender='M')
         assert int(ssn[16]) % 2 == 1
+
+
+class TestRoRO(unittest.TestCase):
+    """ Tests SSN in the ro_RO locale """
+
+    def setUp(self):
+        self.fake = Faker('ro_RO')
+        Faker.seed(0)
+
+    def test_ssn_checksum(self):
+        assert ro_ssn_checksum('188050510739') == 0
+        assert ro_ssn_checksum('181111512587') == 1
+        assert ro_ssn_checksum('190123152499') == 2
+        assert ro_ssn_checksum('601100452314') == 3
+        assert ro_ssn_checksum('296072904713') == 4
+        assert ro_ssn_checksum('601100452314') == 3
+        assert ro_ssn_checksum('192080516368') == 6
+        assert ro_ssn_checksum('602041144519') == 7
+        assert ro_ssn_checksum('197061731387') == 8
+        assert ro_ssn_checksum('294112120140') == 9
+
+    def test_ssn(self):
+        for _ in range(100):
+            assert re.search(r'^\d{13}$', self.fake.ssn())
+
+    def test_vat_checksum(self):
+        assert ro_vat_checksum('1') == 9
+        assert ro_vat_checksum('41') == 8
+        assert ro_vat_checksum('181') == 2
+        assert ro_vat_checksum('82421') == 5
+        assert ro_vat_checksum('424694') == 7
+        assert ro_vat_checksum('3918774') == 6
+        assert ro_vat_checksum('99380784') == 1
+        assert ro_vat_checksum('971775895') == 8
+
+    def test_vat_id(self):
+        for _ in range(100):
+            vat = self.fake.vat_id().replace("RO", "")
+            assert vat.isdigit()
+            assert len(vat) >= 2 and len(vat) <= 10

@@ -1,4 +1,5 @@
 import inspect
+import warnings
 
 
 class Documentor:
@@ -63,9 +64,9 @@ class Documentor:
                                 default = repr(default)
                             else:
                                 # TODO check default type
-                                default = "{}".format(default)
+                                default = f"{default}"
 
-                            arg = "{}={}".format(arg, default)
+                            arg = f'{arg}={default}'
 
                         except IndexError:
                             pass
@@ -81,11 +82,14 @@ class Documentor:
                         arguments.append('**' + argspec.varkw)
 
             # build fake method signature
-            signature = "{}{}({})".format(prefix, name, ", ".join(arguments))
+            signature = f"{prefix}{name}({', '.join(arguments)})"
 
-            # make a fake example
-            example = self.generator.format(name, *faker_args, **faker_kwargs)
-
+            try:
+                # make a fake example
+                example = self.generator.format(name, *faker_args, **faker_kwargs)
+            except (AttributeError, ValueError) as e:
+                warnings.warn(str(e))
+                continue
             formatters[signature] = example
 
             self.max_name_len = max(self.max_name_len, len(signature))

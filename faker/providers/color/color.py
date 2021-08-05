@@ -178,19 +178,19 @@ class RandomColor:
     def set_format(self, hsv, color_format):
         """Handle conversion of HSV values into desired format."""
         if color_format == 'hsv':
-            color = 'hsv({}, {}, {})'.format(*hsv)
+            color = f'hsv({hsv[0]}, {hsv[1]}, {hsv[2]})'
 
         elif color_format == 'hsl':
-            hsl = self.hsv_to_hsl(hsv)
-            color = 'hsl({}, {}, {})'.format(*hsl)
+            hsl = tuple(self.hsv_to_hsl(hsv))
+            color = f'hsl({hsl[0]}, {hsl[1]}, {hsl[2]})'
 
         elif color_format == 'rgb':
-            rgb = self.hsv_to_rgb(hsv)
-            color = 'rgb({}, {}, {})'.format(*rgb)
+            rgb = tuple(self.hsv_to_rgb(hsv))
+            color = f'rgb({rgb[0]}, {rgb[1]}, {rgb[2]})'
 
         else:
-            rgb = self.hsv_to_rgb(hsv)
-            color = '#{:02x}{:02x}{:02x}'.format(*rgb)
+            rgb = tuple(self.hsv_to_rgb(hsv))
+            color = f'#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}'
 
         return color
 
@@ -272,11 +272,7 @@ class RandomColor:
         h = 1 if h == 0 else h
         h = 359 if h == 360 else h
 
-        h = float(h)/360
-        s = float(s)/100
-        v = float(v)/100
-
-        rgb = colorsys.hsv_to_rgb(h, s, v)
+        rgb = colorsys.hsv_to_rgb(h / 360, s / 100, v / 100)
         return (int(c * 255) for c in rgb)
 
     @classmethod
@@ -288,8 +284,8 @@ class RandomColor:
         """
         h, s, v = hsv
 
-        s = float(s)/100
-        v = float(v)/100
+        s = s / 100
+        v = v / 100
         l = 0.5 * v * (2 - s)   # noqa: E741
 
         if l in [0, 1]:

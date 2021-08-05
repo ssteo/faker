@@ -13,6 +13,8 @@ from faker.providers.internet import Provider as InternetProvider
 from faker.providers.internet.en_GB import Provider as EnGbInternetProvider
 from faker.providers.internet.es_ES import Provider as EsEsInternetProvider
 from faker.providers.internet.pl_PL import Provider as PlPlInternetProvider
+from faker.providers.internet.ro_RO import Provider as RoRoInternetProvider
+from faker.providers.internet.th_TH import Provider as ThThInternetProvider
 from faker.providers.internet.zh_CN import Provider as ZhCnInternetProvider
 from faker.providers.person.ja_JP import Provider as JaPersonProvider
 from faker.utils import text
@@ -61,7 +63,7 @@ class TestInternetProvider:
         my_width = 500
         my_height = 1024
         url = faker.image_url(my_width, my_height)
-        assert 'https://dummyimage.com/{}x{}'.format(my_width, my_height) == url
+        assert f'https://dummyimage.com/{my_width}x{my_height}' == url
         url = faker.image_url()
         assert 'https://dummyimage.com/' in url
 
@@ -105,8 +107,8 @@ class TestInternetProvider:
             if address_class is None:
                 networks_attr = '_cached_all_networks'
             else:
-                networks_attr = '_cached_all_class_{}_networks'.format(address_class)
-            weights_attr = '{}_weights'.format(networks_attr)
+                networks_attr = f'_cached_all_class_{address_class}_networks'
+            weights_attr = f'{networks_attr}_weights'
             provider = InternetProvider(faker)
 
             # First, test cache creation
@@ -168,8 +170,8 @@ class TestInternetProvider:
         from faker.providers.internet import _IPv4Constants
 
         for address_class in _IPv4Constants._network_classes.keys():
-            networks_attr = '_cached_public_class_{}_networks'.format(address_class)
-            weights_attr = '{}_weights'.format(networks_attr)
+            networks_attr = f'_cached_public_class_{address_class}_networks'
+            weights_attr = f'{networks_attr}_weights'
             provider = InternetProvider(faker)
 
             # First, test cache creation
@@ -236,7 +238,7 @@ class TestInternetProvider:
         list_of_invalid_weights = [
             [1, 2, 3],   # List size does not match subnet list size
             ['a', 'b'],  # List size matches, but elements are invalid
-            None,        # Not a list or valid iterable
+            11,        # Not a list or valid iterable
         ]
 
         with patch('faker.providers.internet.choices_distribution',
@@ -302,13 +304,37 @@ class TestInternetProvider:
         expected_domain = 'cqphixmpdfpptskr.com'
         assert faker.dga(day=1, month=1, year=1000, tld='com', length=16) == expected_domain
 
+    def test_iana_id(self, faker, num_samples):
+        for _ in range(num_samples):
+            assert 1 <= int(faker.iana_id()) <= 8888888
+
+    def test_ripe_id(self, faker, num_samples):
+        pattern = re.compile(r'^ORG-[A-Z]{2,4}[1-9]\d{0,4}-RIPE$')
+        for _ in range(num_samples):
+            assert pattern.fullmatch(faker.ripe_id())
+
+    def test_nic_handles(self, faker, num_samples):
+        pattern = re.compile(r'^[A-Z]{2,4}[1-9]\d{0,4}-[A-Z]*')
+        for _ in range(num_samples):
+            nhs = faker.nic_handles()
+            for nh in nhs:
+                assert pattern.fullmatch(nh)
+
+        nhs = faker.nic_handles(suffix='??', count=num_samples)
+        assert len(nhs) == num_samples
+        for nh in nhs:
+            assert pattern.fullmatch(nh)
+
+        with pytest.raises(ValueError):
+            faker.nic_handles(suffix='')
+
 
 class TestInternetProviderUrl:
     """ Test internet url generation """
 
     @staticmethod
     def is_correct_scheme(url, schemes):
-        return any(url.startswith('{}://'.format(scheme)) for scheme in schemes)
+        return any(url.startswith(f'{scheme}://') for scheme in schemes)
 
     def test_url_default_schemes(self, faker):
         for _ in range(100):
@@ -651,3 +677,23 @@ class TestEsEs:
     def test_tld(self, faker):
         tld = faker.tld()
         assert tld in EsEsInternetProvider.tlds
+
+
+class TestRoRo:
+    """Test ro_RO internet provider methods"""
+
+    def test_free_email_domain(self, faker):
+        domain = faker.free_email_domain()
+        assert domain in RoRoInternetProvider.free_email_domains
+
+    def test_tld(self, faker):
+        tld = faker.tld()
+        assert tld in PlPlInternetProvider.tlds
+
+
+class TestThTh:
+    """Test th_TH internet provider methods"""
+
+    def test_tld(self, faker):
+        tld = faker.tld()
+        assert tld in ThThInternetProvider.tlds

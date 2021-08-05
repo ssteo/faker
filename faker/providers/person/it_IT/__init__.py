@@ -10,8 +10,6 @@ class Provider(PersonProvider):
         '{{first_name_male}} {{last_name}}',
         '{{first_name_male}} {{last_name}}-{{last_name}}',
         '{{prefix_male}} {{first_name_male}} {{last_name}}',
-        '{{first_name_male}} {{last_name}} {{suffix_male}}',
-        '{{prefix_male}} {{first_name_male}} {{last_name}} {{suffix_male}}',
     )
 
     formats_female = (
@@ -21,8 +19,6 @@ class Provider(PersonProvider):
         '{{first_name_female}} {{last_name}}',
         '{{first_name_female}} {{last_name}}-{{last_name}}',
         '{{prefix_female}} {{first_name_female}} {{last_name}}',
-        '{{first_name_female}} {{last_name}} {{suffix_female}}',
-        '{{prefix_female}} {{first_name_female}} {{last_name}} {{suffix_female}}',
     )
 
     formats = formats_male + formats_female
@@ -205,7 +201,7 @@ class Provider(PersonProvider):
         'Monteverdi', 'Monti', 'Morabito', 'Morandi', 'Morandini', 'Morellato', 'Moresi',
         'Moretti', 'Morgagni', 'Morlacchi', 'Morosini', 'Morpurgo', 'Morricone', 'Morrocco',
         'Mortati', 'Morucci', 'Moschino', 'Mozart', 'Munari', 'Muratori', 'Murialdo',
-        'Murri', 'Musatti', 'Mussolini', 'Muti', 'Naccari', 'Nadi', 'Napolitano', 'Natta',
+        'Murri', 'Musatti', 'Muti', 'Naccari', 'Nadi', 'Napolitano', 'Natta',
         'Navarria', 'Navone', 'Necci', 'Nibali', 'Nicoletti', 'Nicolini', 'Nicolucci',
         'Nievo', 'Niggli', 'Niscoromni', 'Nitti', 'Nitto', 'Nolcini', 'Nonis', 'Norbiato',
         'Nordio', 'Nosiglia', 'Notarbartolo', 'Novaro', 'Nugnes', 'Odescalchi', 'Offredi',
@@ -247,7 +243,7 @@ class Provider(PersonProvider):
         'Sokolov', 'Solari', 'Solimena', 'Sollima', 'Sommaruga', 'Sonnino', 'Soprano',
         'Soranzo', 'Sordi', 'Sorrentino', 'Spadafora', 'Spallanzani', 'Spanevello', 'Speri',
         'Spinelli', 'Spinola', 'Squarcione', 'Sraffa', 'Staglieno', 'Stefanelli', 'Stein',
-        'Stoppani', 'Storladi', 'Stradivari', 'Strangio', 'Stucchi', 'Surian', 'T',
+        'Stoppani', 'Storladi', 'Stradivari', 'Strangio', 'Stucchi', 'Surian',
         'Tacchini', 'Taccola', 'Tafuri', 'Tagliafierro', 'Taliani', 'Taliercio', 'Tamborini',
         'Tamburello', 'Tamburi', 'Tamburini', 'Tanzini', 'Tarantini', 'Tarantino', 'Tarchetti',
         'Tartaglia', 'Tartini', 'Tasca', 'Tasso', 'Tassoni', 'Tebaldi', 'Tedesco', 'Telesio',

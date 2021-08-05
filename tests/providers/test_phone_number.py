@@ -82,8 +82,16 @@ class TestHuHu:
 class TestThTh:
     """Test th_TH phone number provider methods"""
 
-    def test_phone_number_should_be_in_defined_format(self, faker, num_samples):
-        pattern = re.compile(r'\+668? \d{4} \d{4}')
+    def test_phone_number(self, faker, num_samples):
+        pattern = re.compile(
+            # leading zero or internaional code
+            r'((\+66)|\+66[ -]?\(0\)|0)[ -]?'
+            # landline or mobile
+            r'([23457][ -]?(\d[ -]?){6}\d|[689][ -]?(\d[ -]?){7}\d)'
+            # extension
+            r'([ ]?(x|ext|ต่อ)[\.]?[ ]?\d{1,5})?',
+            re.IGNORECASE,
+        )
         for _ in range(num_samples):
             phone_number = faker.phone_number()
             assert isinstance(phone_number, str)
@@ -238,3 +246,59 @@ class TestEsEs:
         for _ in range(num_samples):
             phone_number = faker.phone_number()
             assert pattern.fullmatch(phone_number)
+
+
+class TestArAe:
+    """Test ar_AE phone number provider methods"""
+
+    cellphone_pattern = (
+        r'(?:\+|00)971\s?5[024568]\s?\d{3}\s?\d{4}|'
+        r'05[024568]\s?\d{3}\s?\d{4}'
+    )
+    telephone_pattern = (
+        r'(?:\+|00)971\s?[1234679]\s?\d{3}\s?\d{4}|'
+        r'0[1234679]\s?\d{3}\s?\d{4}'
+    )
+    toll_pattern = (
+        r'200\d{4}|'
+        r'600\d{6}|'
+        r'800\d{3,7}'
+    )
+    service_phone_pattern = (
+        r'9(?:9(?:9|8|7|6|1)|01|22)'
+    )
+
+    def test_cellphone_number(self, faker, num_samples):
+        pattern = re.compile(self.cellphone_pattern)
+        for _ in range(num_samples):
+            cellphone = faker.cellphone_number()
+            assert pattern.fullmatch(cellphone)
+
+    def test_telephone_number(self, faker, num_samples):
+        pattern = re.compile(self.telephone_pattern)
+        for _ in range(num_samples):
+            telephone = faker.telephone_number()
+            assert pattern.fullmatch(telephone)
+
+    def test_toll_number(self, faker, num_samples):
+        pattern = re.compile(self.toll_pattern)
+        for _ in range(num_samples):
+            toll = faker.toll_number()
+            assert pattern.fullmatch(toll)
+
+    def test_service_phone_number(self, faker, num_samples):
+        pattern = re.compile(self.service_phone_pattern)
+        for _ in range(num_samples):
+            service = faker.service_phone_number()
+            assert pattern.fullmatch(service)
+
+    def test_phone_number(self, faker, num_samples):
+        pattern = re.compile(
+            rf'{self.cellphone_pattern}|'
+            rf'{self.telephone_pattern}|'
+            rf'{self.toll_pattern}|'
+            rf'{self.service_phone_pattern}',
+        )
+        for _ in range(num_samples):
+            phone = faker.phone_number()
+            assert pattern.fullmatch(phone)

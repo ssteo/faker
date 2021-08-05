@@ -4,14 +4,20 @@ import itertools
 import json
 import re
 import tarfile
+import unittest
 import uuid
 import zipfile
+
+try:
+    import PIL.Image
+except ImportError:
+    PIL = None
 
 from unittest.mock import patch
 
 import pytest
 
-from faker import Faker
+from faker import Faker, exceptions
 from faker.contrib.pytest.plugin import DEFAULT_LOCALE, DEFAULT_SEED
 
 
@@ -309,6 +315,22 @@ class TestMiscProvider:
                 members = tar_handle.getmembers()
                 assert len(members) == num_files
 
+    @unittest.skipUnless(PIL, 'requires the Python Image Library')
+    def test_image(self, faker):
+        img = PIL.Image.open(io.BytesIO(faker.image()))
+        assert img.size == (256, 256)
+        assert img.format == 'PNG'
+        img = PIL.Image.open(io.BytesIO(faker.image(size=(2, 2), image_format='tiff')))
+        assert img.size == (2, 2)
+        assert img.format == 'TIFF'
+
+    def test_image_no_pillow(self, faker):
+        with patch.dict("sys.modules", {"PIL": None}):
+            with pytest.raises(exceptions.UnsupportedFeature) as excinfo:
+                faker.image()
+
+            assert excinfo.value.name == "image"
+
     def test_dsv_with_invalid_values(self, faker):
         with pytest.raises(ValueError):
             faker.dsv(num_rows='1')
@@ -477,11 +499,13 @@ class TestMiscProvider:
 
         assert isinstance(json_data, list) and len(json_data) == 2
 
-    def test_json_passthrough_int_float(self, faker_with_foobar):
+    def test_json_passthrough_values(self, faker_with_foobar):
         kwargs = {
             'data_columns': {
                 'item1': 1,
                 'item2': 1.0,
+                'item3': True,
+                'item4': '@fixed',
             },
             'num_rows': 1,
         }
@@ -489,6 +513,8 @@ class TestMiscProvider:
 
         assert json_data['item1'] == 1
         assert json_data['item2'] == 1.0
+        assert json_data['item3'] is True
+        assert json_data['item4'] == 'fixed'
 
     def test_json_type_integrity_int(self, faker_with_foobar):
         kwargs = {
@@ -651,3 +677,15 @@ class TestMiscProvider:
         with pytest.raises(TypeError) as excinfo:
             faker_with_foobar.fixed_width(**kwargs)
         assert str(excinfo.value) == 'Invalid arguments type. Must be a dictionary'
+
+    def test_md5(self, faker):
+        assert isinstance(faker.md5(), str)
+        assert isinstance(faker.md5(raw_output=True), bytes)
+
+    def test_sha1(self, faker):
+        assert isinstance(faker.sha1(), str)
+        assert isinstance(faker.sha1(raw_output=True), bytes)
+
+    def test_sha256(self, faker):
+        assert isinstance(faker.sha256(), str)
+        assert isinstance(faker.sha256(raw_output=True), bytes)

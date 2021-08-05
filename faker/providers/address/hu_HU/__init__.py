@@ -210,15 +210,13 @@ class Provider(AddressProvider):
         "Uruguay", "Üzbegisztán", "Vanuatu", "Venezuela", "Vietnam", "Wallis és Futuna", "Zambia", "Zimbabwe",
         "Zöld-foki szigetek")
 
-    def county(self):
+    def administrative_unit(self):
         return self.random_element(self.counties)
 
+    county = administrative_unit
+
     def street_address_with_county(self):
-        return "{street_address}\n{county} megye\n{postcode} {city}".format(
-            street_address=self.street_address(),
-            county=self.county(),
-            postcode=self.postcode(),
-            city=self.city().capitalize())
+        return f'{self.street_address()}\n{self.county()} megye\n{self.postcode()} {self.city().capitalize()}'
 
     def city_prefix(self):
         return self.random_element(self.city_prefs)
@@ -233,8 +231,8 @@ class Provider(AddressProvider):
         return self.random_element(self.frequent_street_names)
 
     def postcode(self):
-        return "H-{}{}{}{}".format(
-            super().random_digit_not_null(), super().random_digit(), super().random_digit(), super().random_digit())
+        return (f'H-{super().random_digit_not_null()}{super().random_digit()}'
+                f'{super().random_digit()}{super().random_digit()}')
 
     def street_name(self):
         return super().street_name().capitalize()

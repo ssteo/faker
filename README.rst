@@ -15,7 +15,7 @@ Faker is heavily inspired by `PHP Faker`_, `Perl Faker`_, and by `Ruby Faker`_.
     _|      _|    _|  _|  _|    _|        _|
     _|        _|_|_|  _|    _|    _|_|_|  _|
 
-|pypi| |unix_build| |windows_build| |coverage| |license|
+|pypi| |build| |coverage| |license|
 
 ----
 
@@ -23,7 +23,7 @@ Compatibility
 -------------
 
 Starting from version ``4.0.0``, ``Faker`` dropped support for Python 2 and from version ``5.0.0``
-only supports Python 3.6 and above. If you still need Python 2 compatibility, please install version ``3.0.1`` in the
+only supports Python 3.7 and above. If you still need Python 2 compatibility, please install version ``3.0.1`` in the
 meantime, and please consider updating your codebase to support Python 3 so you can enjoy the
 latest features ``Faker`` has to offer. Please see the `extended docs`_ for more details, especially
 if you are upgrading from version ``2.0.4`` and below as there might be breaking changes.
@@ -120,7 +120,7 @@ Localization
 
 ``faker.Faker`` can take a locale as an argument, to return localized
 data. If no localized provider is found, the factory falls back to the
-default en\_US locale.
+default LCID string for US english, ie: ``en_US``.
 
 .. code:: python
 
@@ -230,7 +230,7 @@ Examples:
     94812 Biedenkopf
 
     $ faker profile ssn,birthdate
-    {'ssn': u'628-10-1085', 'birthdate': '2008-03-29'}
+    {'ssn': '628-10-1085', 'birthdate': '2008-03-29'}
 
     $ faker -r=3 -s=";" name
     Willam Kertzmann;
@@ -250,7 +250,7 @@ How to create a Provider
 
     # create new provider class
     class MyProvider(BaseProvider):
-        def foo(self):
+        def foo(self) -> str:
             return 'bar'
 
     # then add new provider to faker instance
@@ -259,6 +259,31 @@ How to create a Provider
     # now you can use:
     fake.foo()
     # 'bar'
+
+
+How to create a Dynamic Provider
+--------------------------------
+
+Dynamic providers can read elements from an external source.
+
+.. code:: python
+
+    from faker import Faker
+    from faker.providers import DynamicProvider
+
+    medical_professions_provider = DynamicProvider(
+         provider_name="medical_profession",
+         elements=["dr.", "doctor", "nurse", "surgeon", "clerk"],
+    )
+
+    fake = Faker()
+
+    # then add new provider to faker instance
+    fake.add_provider(medical_professions_provider)
+
+    # now you can use:
+    fake.medical_profession()
+    # 'dr.'
 
 How to customize the Lorem Provider
 -----------------------------------
@@ -447,13 +472,9 @@ Credits
     :target: https://coveralls.io/r/joke2k/faker?branch=master
     :alt: Test coverage
 
-.. |unix_build| image:: https://github.com/joke2k/faker/workflows/Python%20Tests/badge.svg
-    :target: https://github.com/joke2k/faker/actions?query=workflow%3A%22Python+Tests%22
+.. |build| image:: https://github.com/joke2k/faker/workflows/Python%20Tests/badge.svg?branch=master&event=push
+    :target: https://github.com/joke2k/faker/actions?query=workflow%3A%22Python+Tests%22+branch%3Amaster+event%3Apush
     :alt: Build status of the master branch on Mac/Linux
-
-.. |windows_build|  image:: https://img.shields.io/appveyor/ci/joke2k/faker/master.svg?style=flat-square&label=windows%20build
-    :target: https://ci.appveyor.com/project/joke2k/faker
-    :alt: Build status of the master branch on Windows
 
 .. |license| image:: https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square
     :target: https://raw.githubusercontent.com/joke2k/faker/master/LICENSE.txt

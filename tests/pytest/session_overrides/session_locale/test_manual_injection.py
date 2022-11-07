@@ -2,7 +2,7 @@
 
 The following tests cover cases where a ``faker_session_locale`` fixture was defined
 by the user as well as non-autouse ``faker_locale`` and ``faker_seed`` fixtures. The
-resulting behavior of the ``faker`` fixture will vary dependening on which fixtures
+resulting behavior of the ``faker`` fixture will vary depending on which fixtures
 are injected.
 """
 
@@ -16,7 +16,7 @@ from tests.pytest.session_overrides.session_locale import _MODULE_LOCALES
 
 @pytest.fixture()
 def faker_locale():
-    return ['it_IT']
+    return ["it_IT"]
 
 
 @pytest.fixture()

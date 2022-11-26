@@ -1,5 +1,13 @@
 ## Changelog
 
+### [v15.3.3 - 2022-11-22](https://github.com/joke2k/faker/compare/v15.3.2...v15.3.3)
+
+* Fix seeding with multiple locales. Thanks @johntmyers.
+
+### [v15.3.2 - 2022-11-14](https://github.com/joke2k/faker/compare/v15.3.1...v15.3.2)
+
+* Fix implicit Optional issues. Thanks @palfrey.
+
 ### [v15.3.1 - 2022-11-07](https://github.com/joke2k/faker/compare/v15.3.0...v15.3.1)
 
 * Update the `word_list` for `pl_PL`. Thanks @BeRT2me.
